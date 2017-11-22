@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Universal Remote by Styrit</title>
+
+    <link href='libs/glyphicons-only-bootstrap/css/bootstrap.min.css' rel='stylesheet'>
+    <link href="styles.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div id="offline" hidden>You are not connected to the service.</div>
+        <div id="error" hidden></div>
+
+        <table class="controls">
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td>
+                        <button type="button" name="volume-up">
+                            <span class="glyphicon glyphicon-volume-up"></span>
+                        </button>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <button type="button" name="backward">
+                            <span class="glyphicon glyphicon-step-backward"></span>
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" name="play-pause">
+                            <span class="glyphicon glyphicon-play"></span>
+                            <span class="glyphicon glyphicon-pause"></span>
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" name="forward">
+                            <span class="glyphicon glyphicon-step-forward"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <button type="button" name="volume-down">
+                            <span class="glyphicon glyphicon-volume-down"></span>
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" name="volume-off">
+                            <span class="glyphicon glyphicon-volume-off"></span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="dist/index.js"></script>
+</body>
+
+</html>
