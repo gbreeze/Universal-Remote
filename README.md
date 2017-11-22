@@ -1,29 +1,7 @@
-# README #
+# Universal Remote
 
-This README would normally document whatever steps are necessary to get your application up and running.
+A simple application that hosts a web app and a web api to control your media player. `Start UniversalRemote.exe` and you should be able to open the web app on your phone, tablet or pc via browser.
 
-### What is this repository for? ###
-
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+### Notes
+- Admin rights are needed to make the web service accessible from the network.
+- Change the standard port in the UniversalRemote.exe.config file if you want.
