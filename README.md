@@ -4,4 +4,4 @@ A simple application that hosts a web app and a web api to control your media pl
 
 ### Notes
 - Admin rights are needed to make the web service accessible from the network.
-- Change the standard port in the UniversalRemote.exe.config file if you want.
+- Change the standard port in the `UniversalRemote.exe.config` file if you want.
