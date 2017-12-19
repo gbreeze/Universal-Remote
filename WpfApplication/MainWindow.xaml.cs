@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
+using System.Reflection;
 using System.Windows;
-using RemoteService;
 using Microsoft.Owin.Hosting;
 using Microsoft.Win32;
-using System.Reflection;
+using RemoteService;
 
 namespace WpfApplication
 {
@@ -12,6 +13,7 @@ namespace WpfApplication
     {
         const string backgroundArgument = "--background";
         RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+        readonly string port = ConfigurationManager.AppSettings["Port"];
 
         private IDisposable Service { get; set; }
 
@@ -26,6 +28,7 @@ namespace WpfApplication
 
             InitializeComponent();
 
+            this.btnSetup.Content += this.port;
             this.info.Content = $"Version {Assembly.GetEntryAssembly().GetName().Version.ToString().Substring(0, 5)} by styrit.com";
             this.autostart.IsChecked = rkApp.GetValue(Assembly.GetEntryAssembly().GetName().Name) != null;
 
@@ -40,10 +43,21 @@ namespace WpfApplication
             base.OnStateChanged(e);
         }
 
+        protected override void OnClosed(EventArgs e)
+        {
+            if (this.Service != null)
+                this.Service.Dispose();
+
+            base.OnClosed(e);
+        }
+
         private void StartService()
         {
-            string port = ConfigurationManager.AppSettings["Port"];
-            if (string.IsNullOrWhiteSpace(port))
+            this.error.Text = string.Empty;
+            this.pannelOK.Visibility = Visibility.Visible;
+            this.pannelError.Visibility = Visibility.Collapsed;
+
+            if (string.IsNullOrWhiteSpace(this.port))
             {
                 this.error.Text = "ERROR: No 'PORT' defined!";
             }
@@ -51,15 +65,18 @@ namespace WpfApplication
             {
                 try
                 {
-                    // issue: not accesable from remote machine
+                    // issue: service is not accessible from remote machines
                     // https://stackoverflow.com/questions/21634333/hosting-webapi-using-owin-in-a-windows-service
                     // https://forums.asp.net/t/1881253.aspx?More+SelfHost+Documentation
                     // https://stackoverflow.com/questions/24976425/running-self-hosted-owin-web-api-under-non-admin-account
 
                     // To support the MachineName, we have to execute the following command in the cmd with admin rights.
+                    // https://technet.microsoft.com/en-us/library/cc725882(v=ws.10).aspx#BKMK_9
                     // netsh http add urlacl url=http://*:7055/ user=Everyone
+                    // netsh http delete urlacl url=http://*:7055/
 
-                    // as a workaround, we request admin rights to start this application
+                    // [obsolete] as a workaround, we request admin rights to start this application
+                    // autostart is not working if app requests admin rights
 
                     string baseAddress = $"http://*:{port}/";
                     this.serviceAddress.Text = baseAddress.Replace("*", Environment.MachineName);
@@ -70,17 +87,51 @@ namespace WpfApplication
                 catch (Exception ex)
                 {
                     this.error.Text = $"Service could not start. {(ex.InnerException != null ? ex.InnerException.Message : ex.Message)}";
+
+                    if (ex.InnerException != null)
+                    {
+                        if (ex.InnerException is System.Net.HttpListenerException innerEx)
+                        {
+                            if (innerEx.ErrorCode == 5)
+                            {
+                                // do initial setup
+                                this.pannelOK.Visibility = Visibility.Collapsed;
+                                this.pannelError.Visibility = Visibility.Visible;
+                            }
+                            if (innerEx.ErrorCode == 183)
+                            {
+                                // app already running?
+                                this.error.Text = $"Service could not start. There is probably already a running instance of Remote Control or the port '{port}' is already used by another application.";
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        protected override void OnClosed(EventArgs e)
+        private void RunCmd(string command)
         {
-            this.Service.Dispose();
-            base.OnClosed(e);
+            try
+            {
+                var procStartInfo = new ProcessStartInfo(@"cmd.exe", "/c " + command);
+                procStartInfo.UseShellExecute = true;
+                procStartInfo.CreateNoWindow = true;
+                procStartInfo.Verb = "runas";
+
+                using (var proc = new Process())
+                {
+                    proc.StartInfo = procStartInfo;
+                    proc.Start();
+                    proc.WaitForExit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
-        private void autostart_Click(object sender, RoutedEventArgs e)
+        private void Autostart_Click(object sender, RoutedEventArgs e)
         {
             if (autostart.IsChecked.Value)
             {
@@ -95,14 +146,24 @@ namespace WpfApplication
             }
         }
 
-        private void open_Click(object sender, RoutedEventArgs e)
+        private void Open_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start(this.serviceAddress.Text);
+            Process.Start(this.serviceAddress.Text);
         }
 
-        private void version_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Version_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            System.Diagnostics.Process.Start("http://styrit.com");
+            Process.Start("http://styrit.com");
+        }
+
+        private void Setup_Click(object sender, RoutedEventArgs e)
+        {
+            btnSetup.IsEnabled = false;
+
+            this.RunCmd($@"netsh http add urlacl url=http://*:{port}/ user=Everyone");
+            this.StartService();
+
+            btnSetup.IsEnabled = true;
         }
     }
 }

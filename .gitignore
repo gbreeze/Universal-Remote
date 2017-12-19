@@ -35,3 +35,4 @@ src/packages/*
 /packages/*
 /.vs/config/applicationhost.config
 /WpfApplication/UniversalRemote_TemporaryKey.pfx
+/WpfApplication/publish/*

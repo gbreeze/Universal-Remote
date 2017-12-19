@@ -30,6 +30,18 @@ class App
         errorUI.hidden = !v
     }
 
+    private _loading: boolean
+    public get loading(): boolean
+    {
+        return this._loading
+    }
+    public set loading(v: boolean)
+    {
+        this._loading = v
+        let controls = document.querySelector('.controls') as HTMLElement
+        v ? controls.classList.add('loading') : controls.classList.remove('loading')
+    }
+
     constructor()
     {
         this.init()
@@ -59,19 +71,21 @@ class App
         }
     }
 
-    private commandClick(event: Event)
+    private async commandClick(event: Event)
     {
+        this.loading = true
         let element = event.currentTarget as HTMLButtonElement
-        this.sendCommand(element.name)
+        await this.sendCommand(element.name)
+        this.loading = false
     }
 
-    private sendCommand(cmd: string)
+    private async sendCommand(cmd: string)
     {
         if (cmd == 'volume-up' || cmd == 'volume-down')
             cmd += this.volumeStep
 
         // https://developers.google.com/web/updates/2015/03/introduction-to-fetch
-        fetch(this.apiPath + cmd, { method: 'POST' })
+        return fetch(this.apiPath + cmd, { method: 'POST' })
             .then(response =>
             {
                 if (this.error)

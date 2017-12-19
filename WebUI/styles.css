@@ -19,6 +19,13 @@
 
 .controls {
     padding-top: 20px;
+    opacity: 1;
+    transition: opacity 250ms;
+}
+
+.controls.loading {
+    opacity: .3;
+    pointer-events: none;
 }
 
 .controls button {
@@ -34,7 +41,8 @@
 
 button {}
 
-#offline, #error {
+#offline,
+#error {
     background-color: lightgrey;
     padding: 9px 0;
     text-align: center;

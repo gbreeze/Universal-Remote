@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 class App {
     constructor() {
         this.apiPath = '/api/v1/media/';
@@ -24,6 +32,14 @@ class App {
         errorUI.innerText = v;
         errorUI.hidden = !v;
     }
+    get loading() {
+        return this._loading;
+    }
+    set loading(v) {
+        this._loading = v;
+        let controls = document.querySelector('.controls');
+        v ? controls.classList.add('loading') : controls.classList.remove('loading');
+    }
     init() {
         // https://stackoverflow.com/a/36249012/451043
         let controls = Array.from(document.querySelectorAll('.controls button'));
@@ -41,24 +57,30 @@ class App {
         }
     }
     commandClick(event) {
-        let element = event.currentTarget;
-        this.sendCommand(element.name);
+        return __awaiter(this, void 0, void 0, function* () {
+            this.loading = true;
+            let element = event.currentTarget;
+            yield this.sendCommand(element.name);
+            this.loading = false;
+        });
     }
     sendCommand(cmd) {
-        if (cmd == 'volume-up' || cmd == 'volume-down')
-            cmd += this.volumeStep;
-        // https://developers.google.com/web/updates/2015/03/introduction-to-fetch
-        fetch(this.apiPath + cmd, { method: 'POST' })
-            .then(response => {
-            if (this.error)
-                this.error = '';
-            if (!this.online)
-                this.checkConnection();
-        })
-            .catch(error => {
-            this.error = `Command '${cmd}' failed.`;
-            if (this.online)
-                this.checkConnection();
+        return __awaiter(this, void 0, void 0, function* () {
+            if (cmd == 'volume-up' || cmd == 'volume-down')
+                cmd += this.volumeStep;
+            // https://developers.google.com/web/updates/2015/03/introduction-to-fetch
+            return fetch(this.apiPath + cmd, { method: 'POST' })
+                .then(response => {
+                if (this.error)
+                    this.error = '';
+                if (!this.online)
+                    this.checkConnection();
+            })
+                .catch(error => {
+                this.error = `Command '${cmd}' failed.`;
+                if (this.online)
+                    this.checkConnection();
+            });
         });
     }
     checkConnection() {
